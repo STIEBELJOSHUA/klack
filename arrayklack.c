@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "klack.h"
+#include "arrayklack.h"
 
 //macros
 #define IS_IGNORE(ch) (ch==' ' || ch=='\n' || ch=='\0')
@@ -15,16 +15,24 @@ static Token* stackhead = NULL;
 //helper functions (put these in a header file later)
 
 void printarray(Token* tk){
-  if(tk->scalhead==NULL){
+  int prints = tk->size/tk->rows;
+  if(tk->matrix.d==NULL){
     printf("()\n");
     return;
   }
-  Scalar* scl = tk->scalhead;
-  while(scl->next!=NULL){
-    printf("%.2f ",scl->val.d);
-    scl = scl->next;
+  printf("(");
+  for(int i=0;i<(tk->size);i++){
+    if((i)==prints)
+      printf("\n ");
+    double db = tk->matrix.d[i];
+    if((int)db==db)
+      printf("%d",(int)tk->matrix.d[i]);
+    else
+      printf("%.4f",tk->matrix.d[i]);
+    if(i+1!=tk->size)
+      printf(" ");
   }
-  printf("%.2f\n",scl->val.d);
+  printf(")\n");
   
 }
 
@@ -83,13 +91,11 @@ void execline(char* line){
       
       Token* tok = malloc(sizeof(Token));
       tok->size=0;
+      tok->rows=1;
       tok->prev=stackhead;
       stackhead = tok;
-      int headflag = 0;
-      Scalar* heady = NULL;
-      Scalar* taily = NULL;
-
       
+      int headflag = 0;
       
       while(ch!=')'){
         ch=line[++j];
@@ -108,25 +114,26 @@ void execline(char* line){
             ch=line[++j];
           }
           int len = j-start;
-          printf("IS FLOAT: %i, LENGTH: %i\n",float_flag,len);
           char* stri = malloc(len+1);
           char* endptr;
           stri[len]='\0';
           strncpy(stri,&line[start],len);
-          Scalar* scal = malloc(sizeof(Scalar));
-          scal->type=FLOAT;
-          scal->val.d=strtod(stri,&endptr);
-        
           
-          if(headflag == 0){
-            heady=scal;
-            headflag++;
+          double var = strtod(stri,&endptr);
+          
+          if(headflag==0){
+            headflag=1;
+            tok->type=FLOAT;
+            tok->matrix.d=malloc(sizeof(double)*20);
+            tok->matrix.d[tok->size] = var;
           }
-          else{
-            taily->next=scal;
-          }
-          taily = scal;
-          scal->next=NULL;
+          //TODO: this will break after 20 vars, make a append and insert[i] functions and use them here (and everywhere) so this shit wont break. the functions should take the token*, i should never deal with the array directly like i am here. also dont use malloc here, use calloc or something that zeros it out first. for the insert  function, if the array is full, just realloc before hand. simple stuff.
+          tok->matrix.d[tok->size] = var;
+          
+          
+          
+          
+
           tok->size++;
           j--;
         }
@@ -154,7 +161,6 @@ void execline(char* line){
         }
       }
       
-      tok->scalhead=heady;
       ch=line[++j];
       
     }

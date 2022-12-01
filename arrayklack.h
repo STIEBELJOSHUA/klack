@@ -18,8 +18,12 @@ Tokentype type;
 
 typedef struct TokenT{
   Tokentype type;
-  Scalar* scalhead;
-  Scalar* scaltail;
+  int rows;
+  union Array{
+    double* d;
+    char* c;
+    char** s;
+  }matrix;
   int size;
   struct TokenT* prev;
 } Token;

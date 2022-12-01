@@ -1,0 +1,101 @@
+implementation notes so far, of things that need to be fixed, or quirks that I need to program around:
+a single . is a 0, because a float is a . with any number of digits around it .0 0. . 0.0 are all valid ways of writing a float.
+
+
+
+functions are defined with :char function function;
+and the name has to be a single character
+calling a function uses this syntax: _char
+
+variables are defined by 'char*
+that is becaues * takes the top 2 elemeents, and stores the 2nd element at the name of the first element character
+popping a var onto the stack is done with 'char$
+$ takes a variable name from the stack and puts the value stored in that variable there
+
+there are only 1d arrays, you cannot nest arrays
+althought i would love if you could only do 2d arrays, but I might add that later. its just so much more work and im stupid.
+
+arrays are defined with (0 0 1 . 23.1 1) or ("a" "bc")
+
+everything is by default an array of 1 size
+
+arrays are typed, you can only store that type in the array
+
+the types are:
+int 
+float
+char
+string
+
+
+functions by default apply to the whole array, but some functions will require some things, like an array of 1, or both values to be the same size, etc. 
+
+you cant make empty arrays for some reason cause im dumb
+
+all values must be declared in an array ()
+
+also cause im dumb
+
+for now cause im also dumb, the langauge has undefined behavior, so dont do anything dumb
+
+idea
+so nested arrays dont exist
+its just normal arrays
+except that an array can either be 1d or 2d
+if its 2d you specify a sub array size and the array head stores this
+example
+(1 2 3 4)
+if the sub array size was set to 2, even though it is stored as a linked list, we just pretend that its a 2d array
+so it will print the first 2 elements, then the second 2
+(1 2
+ 3 4)
+ 
+(1 2 3
+ 4 5 6
+ 7 8 9)
+ 
+ reshape is a thing, and it just appends 0 to pad it out
+ and in the future if i need, i can change it to make it start repeating if i need i guess
+ 
+ before tonight:
+ print stack
+ implement add
+ do as much of the e-quip as possible, making sure I can finish it tommorow by asking people for permission and getting addresses
+ 
+ also note to future self:
+ implement an adverb RIGHT after implementing plus, before implementing any other verbs, because I need to make sure that my i dont need to edit how my verbs work for adverbs to work
+
+ ok so for a second i though I should use built in c arrays instead of linked lists.
+ with helper functions it should be fine either way, but linked lists are better cause I can remove elements at specific indexes. but what am i doing more? what is more efficent?
+ tbh built in c lists with helper functions to make it dynamic is just better here, and then the stack itself is implemented with the linked list of pointers. Yeah. FUCK, now I have to redo a LOT of code. whatever i guess thats fine. Also note to self, start making helper functions to access the c arrays, dont do it manually. also this means that since in c arrays have types, arrays here will have types too. The type is stored in the token node. the types are float, char, char* (number char string). oh fuck, i actiaully need to do this. I just realized the fucking cost of freeing every node in an array every fucking time i pop it off the stack. Yeah, using c arrays is the play.
+ 
+ after looking at it its not even that much work either. I spent way too much fucking time on the fucking linked shit omg.
+ 
+ functions needed:
+ remove(i)
+ insert(i)
+ append
+ pop
+ the second two are trivial after implemetning the first 2.
+ 
+ 
+ WAIT, use a doubly linked list
+ removals of elements in the built in c array sucks ass
+ 
+ 
+ todo to get functionaing lang:
+ 1. array helper functions
+ 2. chars
+ 3. strings
+ 4. dont let people declare (1 "a" 'b) / typechecking
+ 5. variables
+ 6 custom word definiton
+ 7.control flow
+ 8.comments
+ 9 and 10. verbs and adverbs. start by making 1 verb and 1 adverb. that way I know how to make verbs and adverbs that work together in the future. cause the verb implementation will depend on the adverb implementation and viceversa.
+ 11. i/o
+ 12. stdlib
+ 13. documentation
+ 14. interprit from file, not just repl
+ 15. use and improve!
+
