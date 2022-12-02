@@ -2,6 +2,9 @@ implementation notes so far, of things that need to be fixed, or quirks that I n
 a single . is a 0, because a float is a . with any number of digits around it .0 0. . 0.0 are all valid ways of writing a float.
 
 
+you can define functions/variables with :a(123): or ;a(123); the reason for this is that so you can nest them once. 
+
+this language has a fuck ton of undefined behavior, I basically dont check for anything, so watch out. 
 
 functions are defined with :char function function;
 and the name has to be a single character
@@ -82,14 +85,17 @@ so it will print the first 2 elements, then the second 2
  WAIT, use a doubly linked list
  removals of elements in the built in c array sucks ass
  
+ bugs:
+ array parser goes until ), if there is no ) it just keeps going forever.
+ 
  
  todo to get functionaing lang:
- 1. array helper functions
  2. chars
  3. strings
+  1. array helper functions for each type
  4. dont let people declare (1 "a" 'b) / typechecking
- 5. variables
- 6 custom word definiton
+ 5. variables DONE
+ 6 custom word definiton DONE
  7.control flow
  8.comments
  9 and 10. verbs and adverbs. start by making 1 verb and 1 adverb. that way I know how to make verbs and adverbs that work together in the future. cause the verb implementation will depend on the adverb implementation and viceversa.

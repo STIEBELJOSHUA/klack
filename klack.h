@@ -18,9 +18,17 @@ Tokentype type;
 
 typedef struct TokenT{
   Tokentype type;
-  Scalar* scalhead;
-  Scalar* scaltail;
+  // number of rows for matrix dimension
+  int rows;
+  //size is the actiual size of the array in c
   int size;
+  //len is the number of elements
+  int len;
+  union Array{
+    double* d;
+    char* c;
+    char** s;
+  }matrix;
   struct TokenT* prev;
 } Token;
 

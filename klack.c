@@ -6,25 +6,45 @@
 
 //macros
 #define IS_IGNORE(ch) (ch==' ' || ch=='\n' || ch=='\0')
-#define IS_NUM(ch) ((ch > 47 && ch < 58)||(ch=='.'))
+#define IS_NUM(ch) ((ch > 47 && ch < 58)||(ch=='.')||(ch=='-'))
 
 //globals
 //points to head of stack
 static Token* stackhead = NULL;
 
-//helper functions (put these in a header file later)
+//helper functions
+
+//append to double array
+void darrayappend(Token* tk, double dub){
+  if(tk->size == tk->len){
+    double* temp = realloc(tk->matrix.d,(tk->size*2)*sizeof(double));
+    tk->matrix.d = temp;
+    tk->size=tk->size*2;
+  }
+  tk->matrix.d[tk->len] = dub;
+  tk->len++;
+}
+
 
 void printarray(Token* tk){
-  if(tk->scalhead==NULL){
+  int prints = tk->len/tk->rows;
+  if(tk->matrix.d==NULL){
     printf("()\n");
     return;
   }
-  Scalar* scl = tk->scalhead;
-  while(scl->next!=NULL){
-    printf("%.2f ",scl->val.d);
-    scl = scl->next;
+  printf("(");
+  for(int i=0;i<(tk->len);i++){
+    if((i)==prints)
+      printf("\n ");
+    double db = tk->matrix.d[i];
+    if((int)db==db)
+      printf("%d",(int)tk->matrix.d[i]);
+    else
+      printf("%.4f",tk->matrix.d[i]);
+    if(i+1!=tk->len)
+      printf(" ");
   }
-  printf("%.2f\n",scl->val.d);
+  printf(")\n");
   
 }
 
@@ -51,7 +71,7 @@ void printstack(){
 
 //primitave "dict"
 char prims[] = "+-p";
-void (*prim_func[128])() = {'\0'};
+void (*prim_func[128])();
 
 void init_prims(){
   prim_func[(int)'+']=add;
@@ -59,11 +79,13 @@ void init_prims(){
   prim_func[(int)'p']=printstack;
 }
 
-
+//defined function "dict"
+char* def_funcs[128];
+//defined variables "dict"
+char* def_vars[128];
 //execute a chunk of code MAKE SURE ITS NULL TERMINATED
 void execline(char* line){
   int i = strlen(line);
-  int t = 0;
   
   for(int j=0;j<i;j++){
     char ch = line[j];
@@ -72,62 +94,55 @@ void execline(char* line){
     if(IS_IGNORE(ch)){
       continue;
     }
+    //check for defined function
+    else if(ch=='_'){
+      ch=line[++j];
+      execline(def_funcs[(int)ch]);
+    }
+    //check for defined variables
+    else if(ch=='~'){
+      ch=line[++j];
+      execline(def_vars[(int)ch]);
+    }
     //check for primitaves
     else if(strchr(prims,ch)){
       (*prim_func[(int)ch])();
-      t++;
-      continue;
     }
     //array parser
     else if(ch=='('){
       
       Token* tok = malloc(sizeof(Token));
-      tok->size=0;
+      tok->len=0;
+      tok->rows=1;
       tok->prev=stackhead;
       stackhead = tok;
-      int headflag = 0;
-      Scalar* heady = NULL;
-      Scalar* taily = NULL;
-
       
+      int headflag = 0;
       
       while(ch!=')'){
         ch=line[++j];
         
         if(IS_NUM(ch)){
           int start = j;
-          int float_flag = 0;
           while(IS_NUM(ch)){
-            if(ch=='.'){
-              if(float_flag==1){
-                fprintf(stderr, "%c is not a valid character!\n",ch);
-                return;
-              }
-              float_flag=1;
-            }
             ch=line[++j];
           }
           int len = j-start;
-          printf("IS FLOAT: %i, LENGTH: %i\n",float_flag,len);
           char* stri = malloc(len+1);
           char* endptr;
           stri[len]='\0';
           strncpy(stri,&line[start],len);
-          Scalar* scal = malloc(sizeof(Scalar));
-          scal->type=FLOAT;
-          scal->val.d=strtod(stri,&endptr);
-        
           
-          if(headflag == 0){
-            heady=scal;
-            headflag++;
+          double var = strtod(stri,&endptr);
+          
+          if(headflag==0){
+            headflag=1;
+            tok->type=FLOAT;
+            tok->matrix.d=malloc(sizeof(double)*10);
+            tok->size=10;
+            tok->matrix.d[tok->len] = var;
           }
-          else{
-            taily->next=scal;
-          }
-          taily = scal;
-          scal->next=NULL;
-          tok->size++;
+          darrayappend(tok,var);
           j--;
         }
         
@@ -154,10 +169,51 @@ void execline(char* line){
         }
       }
       
-      tok->scalhead=heady;
       ch=line[++j];
       
     }
+    
+    //define function
+    else if(ch==':'){
+          int start=j;
+          ch=line[++j];
+          char name = ch;
+          ch=line[++j];
+          while(ch!=':'){
+            if(ch=='\0'){
+              fprintf(stderr,"missing ending :\n");
+              return;
+            }
+            ch=line[++j];
+          }
+          int len = j-start-2;
+          char* stri = malloc(len+1);
+          stri[len]='\0';
+          strncpy(stri,&line[start+2],len);
+          free(def_funcs[(int)name]);
+          def_funcs[(int)name]=stri;
+        }
+     
+    //define variable 
+    else if(ch==';'){
+          int start=j;
+          ch=line[++j];
+          char name = ch;
+          ch=line[++j];
+          while(ch!=';'){
+            if(ch=='\0'){
+              fprintf(stderr,"missing ending ;\n");
+              return;
+            }
+            ch=line[++j];
+          }
+          int len = j-start-2;
+          char* stri = malloc(len+1);
+          stri[len]='\0';
+          strncpy(stri,&line[start+2],len);
+          free(def_vars[(int)name]);
+          def_vars[(int)name]=stri;
+        }
     
     else{
       fprintf(stderr, "%c is not a valid character!\n",ch);
