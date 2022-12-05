@@ -2,6 +2,7 @@ implementation notes so far, of things that need to be fixed, or quirks that I n
 a single . is a 0, because a float is a . with any number of digits around it .0 0. . 0.0 are all valid ways of writing a float.
 
 
+
 you can define functions/variables with :a(123): or ;a(123); the reason for this is that so you can nest them once. 
 
 this language has a fuck ton of undefined behavior, I basically dont check for anything, so watch out. 
